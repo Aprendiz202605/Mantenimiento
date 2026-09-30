@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Solicitudes de mantenimiento · Hada</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%9A%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<script src="js/config.js"></script>
+<script src="vendor/supabase.js"></script>
+<script src="vendor/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<!-- ---------- Pantalla de login ---------- -->
+<div id="loginScreen" style="display:none">
+  <div class="login-card">
+    <img src="logo.png" alt="Hada">
+    <h1>Solicitudes de mantenimiento</h1>
+    <p>Inicia sesión con tu cuenta de Hada.</p>
+    <div class="fld"><label>Correo</label><input id="loginCorreo" type="email" autocomplete="username"></div>
+    <div class="fld"><label>Contraseña</label><input id="loginPass" type="password" autocomplete="current-password"></div>
+    <div class="err" id="loginErr"></div>
+    <button class="btn primary" id="loginBtn" style="width:100%">Entrar</button>
+    <p style="margin-top:16px;font-size:12px">¿Solo vienes a reportar una falla? <a href="reportar.html">Formulario público</a></p>
+  </div>
+</div>
+
+<!-- ---------- App ---------- -->
+<div id="appShell" style="display:none">
+  <header>
+    <div class="hrow">
+      <div class="brand">
+        <img id="logo" alt="Hada" src="logo.png">
+        <div><div class="tag">Planta · Órdenes de trabajo</div><h1>Solicitudes de mantenimiento</h1></div>
+      </div>
+      <div class="hbtns">
+        <button class="btn" id="bAdmin" style="display:none">⚙ Administración</button>
+        <button class="btn primary" id="bNew">+ Reportar</button>
+        <span class="who" id="who"></span>
+        <button class="btn ghost" id="bLogout" title="Cerrar sesión">Salir</button>
+      </div>
+    </div>
+  </header>
+  <div id="banner"></div>
+
+  <main>
+    <div id="vistaTablero">
+      <div class="stats" id="stats"></div>
+      <section class="chart"><h2 id="chartT">Tareas por línea</h2><div id="chart"></div></section>
+      <div class="tabs">
+        <button class="tab on" data-tab="pendientes">Tareas Pendientes<span class="c" id="cPend">0</span></button>
+        <button class="tab" data-tab="ejecucion">Tareas en Ejecución<span class="c" id="cEjec">0</span></button>
+        <button class="tab" data-tab="finalizadas">Tareas Finalizadas<span class="c" id="cFin">0</span></button>
+      </div>
+      <div class="filters">
+        <input type="search" id="fq" placeholder="Buscar…">
+        <select id="fe"></select>
+        <select id="fl"></select>
+        <select id="fr"></select>
+        <select id="ft"></select>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+    <div id="vistaAdmin" style="display:none">
+      <div id="adminPanel"></div>
+    </div>
+  </main>
+  <button class="fab" id="fab" aria-label="Reportar">+</button>
+  <div id="toastWrap" aria-live="polite"></div>
+</div>
+
+<!-- ---------- Modal: nueva solicitud (usuario interno) ---------- -->
+<div class="ov" id="ovNew"><div class="sheet">
+  <h2>Nueva solicitud</h2>
+  <div class="two">
+    <div class="fld"><label>Área *</label><select id="nArea"></select></div>
+    <div class="fld"><label>Línea *</label><select id="nLinea"></select></div>
+  </div>
+  <div class="two">
+    <div class="fld"><label>Tipo de actividad *</label><input id="nTipo" autocomplete="off"></div>
+    <div class="fld"><label>Prioridad</label><select id="nPrio"><option>Media</option><option>Alta</option><option>Baja</option></select></div>
+  </div>
+  <div class="fld"><label>Actividad *</label><input id="nAct" autocomplete="off"></div>
+  <div class="two">
+    <div class="fld"><label>Nro. de aviso</label><input id="nAviso" autocomplete="off"></div>
+    <div class="fld"><label>Responsable</label><select id="nResp"></select></div>
+  </div>
+  <div class="fld"><label>Descripción</label><textarea id="nDesc" rows="2"></textarea></div>
+  <div class="fld"><label>Solicitante</label><input id="nSol" autocomplete="off"></div>
+  <div class="err" id="nErr"></div>
+  <div class="srow"><button class="btn" id="nCancel">Cancelar</button><button class="btn primary" id="nSave">Guardar</button></div>
+</div></div>
+
+<!-- ---------- Modal: detalle de tarea ---------- -->
+<div class="ov" id="ovDet"><div class="sheet wide">
+  <div id="detBody"></div>
+  <div class="det-section">
+    <h4>Comentarios y Observaciones <span class="com-count" id="comCount"></span></h4>
+    <div class="com-list" id="comList"></div>
+    <div class="com-add">
+      <textarea id="comIn" rows="1" placeholder="Escribe un comentario…"></textarea>
+      <button class="btn primary" id="comAddBtn">Enviar</button>
+    </div>
+  </div>
+  <div class="det-section">
+    <h4>Historial</h4>
+    <div id="histList"></div>
+  </div>
+  <div class="srow"><button class="btn" id="detClose">Cerrar</button></div>
+</div></div>
+
+<!-- ---------- Modal: editar/agregar aviso ---------- -->
+<div class="ov" id="ovAviso"><div class="sheet">
+  <h2 id="avT">Editar número de aviso</h2>
+  <div class="fld"><label>Nro. de aviso</label><input id="avIn" autocomplete="off" placeholder="Ej: 800038692 o AV-800038692"></div>
+  <div class="err" id="avErr"></div>
+  <div class="srow"><button class="btn" id="avCancel">Cancelar</button><button class="btn primary" id="avSave">Guardar</button></div>
+</div></div>
+
+<!-- ---------- Modal: usuario (alta / edición) ---------- -->
+<div class="ov" id="ovUsuario"><div class="sheet">
+  <h2 id="umT">Nuevo usuario</h2>
+  <div class="fld"><label>Nombre completo</label><input id="umNombre" autocomplete="off"></div>
+  <div class="fld"><label>Correo</label><input id="umCorreo" type="email" autocomplete="off"></div>
+  <div class="fld"><label>Contraseña temporal</label><input id="umPass" type="text" autocomplete="off" placeholder="Mínimo 8 caracteres"></div>
+  <div class="fld"><label>Rol</label><select id="umRol"></select></div>
+  <div class="fld" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="umActivo" style="width:auto"><label style="margin:0">Activo</label></div>
+  <div class="err" id="umErr"></div>
+  <div class="srow"><button class="btn" id="umCancel">Cancelar</button><button class="btn primary" id="umSave">Guardar</button></div>
+</div></div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

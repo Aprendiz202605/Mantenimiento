@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>Reportar falla · Hada</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%9A%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
+<!-- Cloudflare Turnstile: solo en esta página pública, para frenar spam del formulario -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<style>
+  body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .rep-card{width:100%;max-width:420px;border:1px solid var(--g-line);border-radius:16px;padding:24px}
+  .rep-card img{height:48px;display:block;margin:0 auto 12px}
+  .rep-card h1{font-family:'Space Grotesk',sans-serif;font-size:19px;text-align:center;margin:0 0 4px}
+  .rep-card p.sub{color:var(--ink3);font-size:13px;text-align:center;margin:0 0 20px}
+  .ok-box{text-align:center;padding:20px 10px}
+  .ok-box .consec{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--g-dark);margin:10px 0}
+  #cf-turnstile{margin:12px 0;display:flex;justify-content:center}
+</style>
+</head>
+<body>
+<div class="rep-card">
+  <img src="logo.png" alt="Hada">
+  <h1>Reportar una falla</h1>
+  <p class="sub">Formulario público de mantenimiento · Planta Hada</p>
+
+  <div id="formWrap">
+    <div class="fld"><label>Área *</label><select id="rArea"></select></div>
+    <div class="fld"><label>Línea *</label><select id="rLinea"></select></div>
+    <div class="fld"><label>Tipo *</label>
+      <select id="rTipo">
+        <option>Eléctrica</option><option>Mecánica</option><option>Instrumentación</option>
+        <option>Infraestructura</option><option>Automatización</option><option>Soldadura</option><option>Otra</option>
+      </select>
+    </div>
+    <div class="fld"><label>Descripción *</label><textarea id="rDesc" rows="3" placeholder="Describe la falla…"></textarea></div>
+    <div class="fld"><label>Prioridad</label><select id="rPrio"><option>Media</option><option>Alta</option><option>Baja</option></select></div>
+    <div class="fld"><label>Tu nombre (opcional)</label><input id="rSol" autocomplete="off"></div>
+    <div id="cf-turnstile"></div>
+    <div class="err" id="rErr"></div>
+    <button class="btn primary" id="rSend" style="width:100%">Enviar reporte</button>
+  </div>
+
+  <div id="okWrap" class="ok-box" style="display:none">
+    <p>Tu solicitud fue registrada con el número:</p>
+    <div class="consec" id="okConsec"></div>
+    <p style="color:var(--ink2);font-size:13.5px">Guárdalo si necesitas mencionarlo con Mantenimiento.</p>
+    <button class="btn" id="rOtra" style="margin-top:10px">Reportar otra falla</button>
+  </div>
+</div>
+<script src="js/config.js"></script>
+<script type="module" src="js/reportar.js"></script>
+</body>
+</html>
